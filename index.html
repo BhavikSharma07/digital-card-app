@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalCard - Premium Visiting Card Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        premium: {
+                            gold: '#D4AF37',
+                            glass: 'rgba(255, 255, 255, 0.1)',
+                            dark: '#050505',
+                            accent: '#06b6d4',
+                            secondary: '#f472b6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 8s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-up': 'slide-up 0.5s ease-out'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' }
+                        },
+                        glow: {
+                            '0%': { 'box-shadow': '0 0 5px rgba(99, 102, 241, 0.2)' },
+                            '100%': { 'box-shadow': '0 0 20px rgba(99, 102, 241, 0.6)' }
+                        },
+                        'slide-up': {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-primary: #6366f1;
+            --accent-secondary: #ec4899;
+        }
+
+        .glass-morphism {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-morphism:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            /* Vibrant Mesh Gradient Background Matches style.css */
+            background:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(339, 49%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 50%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 0% 100%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 100%, hsla(339, 49%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(253, 16%, 7%, 1) 0, transparent 50%);
+            background-color: #0f172a;
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #fff 0%, #6366f1 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-preview-container {
+            perspective: 2000px;
+        }
+
+        .card-inner {
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        .input-premium {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-premium:focus {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Mobile Menu styles */
+        #mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #mobile-menu.active {
+            transform: translateX(0);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Responsive Card Scaling */
+        @media (max-width: 640px) {
+            #visiting-card {
+                font-size: 0.85rem;
+                padding: 1.5rem !important;
+            }
+
+            #preview-name {
+                font-size: 1.5rem !important;
+            }
+
+            #qrcode {
+                width: 4rem !important;
+                height: 4rem !important;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+
+<body class="font-sans antialiased text-gray-200">
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-[100] border-b border-white/5 glass-morphism">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="flex items-center gap-3 group cursor-pointer">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-id-card text-white text-lg"></i>
+                    </div>
+                    <span class="text-2xl font-outfit font-bold tracking-tighter text-white">Digital<span
+                            class="text-cyan-400">Card</span></span>
+                </a>
+
+                <div class="hidden md:flex items-center gap-10">
+                    <a href="index.html"
+                        class="nav-link text-sm font-medium text-gray-300 hover:text-white transition-colors">Home</a>
+                    <a href="features.html"
+                        class="nav-link text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</a>
+                    <a href="index.html#how-it-works"
+                        class="nav-link text-sm font-medium text-gray-300 hover:text-white transition-colors">How it
+                        Works</a>
+                    <a href="pricing.html"
+                        class="nav-link text-sm font-medium text-gray-300 hover:text-white transition-colors">Pricing</a>
+                    <div id="auth-buttons" class="flex items-center gap-6">
+                        <a href="login.html"
+                            class="nav-link text-sm font-medium text-gray-300 hover:text-white transition-colors">Login</a>
+                        <a href="register.html"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-full text-sm font-bold transition-all shadow-xl shadow-indigo-500/20 active:scale-95">
+                            Sign Up
+                        </a>
+                    </div>
+                    <div id="user-menu" class="hidden flex items-center gap-6">
+                        <a href="create.html"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-full text-sm font-bold transition-all shadow-xl shadow-indigo-500/20 active:scale-95">
+                            Dashboard
+                        </a>
+                        <button id="logout-btn"
+                            class="nav-link text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <button id="menu-toggle" class="md:hidden text-white p-2">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 z-[150] bg-black/95 backdrop-blur-xl md:hidden">
+        <div class="flex flex-col items-center justify-center h-full gap-8">
+            <button id="menu-close" class="absolute top-6 right-6 text-white text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <a href="index.html" class="text-2xl font-bold text-white hover:text-indigo-400">Home</a>
+            <a href="features.html" class="text-2xl font-bold text-white hover:text-indigo-400">Features</a>
+            <a href="index.html#how-it-works" class="text-2xl font-bold text-white hover:text-indigo-400">How it
+                Works</a>
+            <a href="pricing.html" class="text-2xl font-bold text-white hover:text-indigo-400">Pricing</a>
+            <div id="mobile-auth-buttons" class="flex flex-col items-center gap-6 w-full">
+                <a href="login.html" class="text-2xl font-bold text-white hover:text-indigo-400">Login</a>
+                <a href="register.html" class="bg-indigo-600 text-white px-10 py-4 rounded-full text-lg font-bold">
+                    Sign Up
+                </a>
+            </div>
+            <div id="mobile-user-menu" class="hidden flex flex-col items-center gap-6 w-full">
+                <a href="create.html" class="bg-indigo-600 text-white px-10 py-4 rounded-full text-lg font-bold">
+                    Dashboard
+                </a>
+                <button id="mobile-logout-btn"
+                    class="text-2xl font-bold text-white hover:text-indigo-400">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <main class="pt-32 pb-20 overflow-hidden relative">
+        <!-- Background Glows -->
+        <!-- Background Glows -->
+        <div class="absolute top-1/4 -left-20 w-96 h-96 bg-cyan-500/20 blur-[120px] rounded-full"></div>
+        <div class="absolute bottom-0 -right-20 w-96 h-96 bg-fuchsia-500/20 blur-[120px] rounded-full"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center space-y-8 max-w-4xl mx-auto animate-slide-up">
+                <span
+                    class="px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold tracking-widest uppercase">The
+                    Future of Networking</span>
+                <h1
+                    class="text-5xl md:text-8xl font-outfit font-extrabold gradient-text leading-tight tracking-tighter">
+                    Your Professional Identity,<br>Revolutionized.
+                </h1>
+                <p class="text-gray-400 text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed">
+                    The world's most sophisticated digital visiting card platform. Create, share, and manage your elite
+                    networking presence in seconds.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
+                    <button onclick="handleCreateClick()"
+                        class="w-full sm:w-auto px-12 py-5 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black text-lg shadow-2xl shadow-cyan-600/30 transition-all hover:scale-105 active:scale-95">
+                        Create Your Card Free
+                    </button>
+                    <a href="pricing.html"
+                        class="w-full sm:w-auto px-12 py-5 rounded-2xl glass-morphism text-white font-bold text-lg hover:bg-white/10 transition-all hover:scale-105 active:scale-95">
+                        View Premium Plans
+                    </a>
+                </div>
+            </div>
+
+            <!-- Visual Demo / Mockup -->
+            <div class="mt-24 relative max-w-5xl mx-auto animate-fade-in">
+                <div class="glass-morphism rounded-[3rem] p-1 border-white/10 overflow-hidden shadow-2xl">
+                    <div class="bg-gray-950/50 backdrop-blur-2xl rounded-[2.8rem] overflow-hidden p-8 md:p-12">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                            <div class="space-y-6">
+                                <h2 class="text-3xl font-outfit font-bold text-white">Elite 3D Preview</h2>
+                                <p class="text-gray-400 text-lg">Our proprietary 3D tilt engine gives your digital card
+                                    a tactile, premium feel that leaves a lasting impression on your clients.</p>
+                                <div class="flex gap-4">
+                                    <div
+                                        class="flex items-center gap-2 text-indigo-400 text-sm font-bold uppercase tracking-widest">
+                                        <i class="fas fa-check-circle"></i> Gyroscope Ready
+                                    </div>
+                                    <div
+                                        class="flex items-center gap-2 text-indigo-400 text-sm font-bold uppercase tracking-widest">
+                                        <i class="fas fa-check-circle"></i> HD Export
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relative group cursor-pointer card-preview-container flex justify-center">
+                                <!-- Static Representative Card for Hero -->
+                                <div class="card-inner w-full max-w-sm">
+                                    <div
+                                        class="relative w-full aspect-[1.75/1] rounded-3xl overflow-hidden glass-morphism p-6 shadow-2xl border border-white/20 select-none">
+                                        <div
+                                            class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/20 blur-[40px] rounded-full">
+                                        </div>
+                                        <div class="relative h-full flex flex-col justify-between">
+                                            <div>
+                                                <h3 class="text-2xl font-outfit font-bold text-white mb-0.5">Jane Doe
+                                                </h3>
+                                                <p
+                                                    class="text-indigo-400 font-bold tracking-widest text-[10px] uppercase">
+                                                    Creative Director</p>
+                                            </div>
+                                            <div class="flex justify-between items-end">
+                                                <div class="space-y-1.5">
+                                                    <div class="flex items-center gap-2 text-[10px] text-gray-400">
+                                                        <i class="fas fa-phone"></i> +1 234 567 890
+                                                    </div>
+                                                    <div class="flex items-center gap-2 text-[10px] text-gray-400">
+                                                        <i class="fas fa-envelope"></i> jane@studio.com
+                                                    </div>
+                                                </div>
+                                                <div class="w-12 h-12 bg-white rounded-lg p-1">
+                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Example"
+                                                        alt="QR">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Templates Showcase Section -->
+    <section id="templates" class="py-32 relative overflow-hidden border-t border-white/5">
+        <div
+            class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none">
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center mb-20 space-y-4">
+                <span class="text-cyan-400 font-bold tracking-widest uppercase text-xs">Curated Designs</span>
+                <h2 class="text-4xl md:text-5xl font-outfit font-bold text-white">Discover Premium Aesthetics</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">Choose from our gallery of elite templates. Whether
+                    you're a CEO, Artist, or Doctor, we have a design that speaks your language.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Template 1: Corporate -->
+                <div class="group relative">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity">
+                    </div>
+                    <div
+                        class="glass-morphism rounded-3xl p-1 h-full relative hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gray-900/40 rounded-[1.4rem] overflow-hidden h-full flex flex-col">
+                            <div
+                                class="h-48 bg-gradient-to-br from-slate-800 to-slate-900 relative p-6 flex flex-col justify-between group-hover:scale-105 transition-transform duration-500">
+                                <div
+                                    class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5">
+                                    <i class="fas fa-building text-white/80"></i>
+                                </div>
+                                <div>
+                                    <div class="h-2 w-24 bg-white/20 rounded mb-2"></div>
+                                    <div class="h-2 w-16 bg-white/10 rounded"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-white mb-2">The Executive</h3>
+                                <p class="text-gray-400 text-sm mb-4">Minimalist, authoritative, and clean. Perfect for
+                                    C-Suite professionals.</p>
+                                <button onclick="handleCreateClick()"
+                                    class="inline-flex items-center text-cyan-400 text-sm font-bold hover:text-cyan-300">Use
+                                    Template <i class="fas fa-arrow-right ml-2 text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Template 2: Creative -->
+                <div class="group relative">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity">
+                    </div>
+                    <div
+                        class="glass-morphism rounded-3xl p-1 h-full relative hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gray-900/40 rounded-[1.4rem] overflow-hidden h-full flex flex-col">
+                            <div
+                                class="h-48 bg-gradient-to-br from-purple-900 to-pink-900 relative p-6 flex flex-col justify-between group-hover:scale-105 transition-transform duration-500">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                                    <i class="fas fa-bezier-curve text-white"></i>
+                                </div>
+                                <div class="text-right">
+                                    <div class="h-2 w-24 bg-white/20 rounded mb-2 ml-auto"></div>
+                                    <div class="h-2 w-16 bg-white/10 rounded ml-auto"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-white mb-2">The Visionary</h3>
+                                <p class="text-gray-400 text-sm mb-4">Bold colors and dynamic typography for designers
+                                    and artists.</p>
+                                <button onclick="handleCreateClick()"
+                                    class="inline-flex items-center text-purple-400 text-sm font-bold hover:text-purple-300">Use
+                                    Template <i class="fas fa-arrow-right ml-2 text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Template 3: Medical -->
+                <div class="group relative">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity">
+                    </div>
+                    <div
+                        class="glass-morphism rounded-3xl p-1 h-full relative hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gray-900/40 rounded-[1.4rem] overflow-hidden h-full flex flex-col">
+                            <div
+                                class="h-48 bg-gradient-to-br from-emerald-900 to-teal-900 relative p-6 flex flex-col justify-between group-hover:scale-105 transition-transform duration-500">
+                                <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg">
+                                    <i class="fas fa-user-md text-emerald-600"></i>
+                                </div>
+                                <div class="flex gap-2">
+                                    <div class="h-8 w-8 rounded-full bg-white/10"></div>
+                                    <div class="h-8 w-8 rounded-full bg-white/10"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-white mb-2">The Specialist</h3>
+                                <p class="text-gray-400 text-sm mb-4">Trustworthy, calm, and professional. Ideal for
+                                    healthcare providers.</p>
+                                <button onclick="handleCreateClick()"
+                                    class="inline-flex items-center text-emerald-400 text-sm font-bold hover:text-emerald-300">Use
+                                    Template <i class="fas fa-arrow-right ml-2 text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="features.html"
+                    class="px-8 py-3 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-white font-medium text-sm">View
+                    All 50+ Templates</a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Publish & Share Section -->
+    <section class="py-32 relative border-t border-white/5 bg-white/[0.01]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <span class="text-emerald-400 font-bold tracking-widest uppercase text-xs">Limitless Reach</span>
+            <h2 class="text-4xl md:text-5xl font-outfit font-bold text-white mb-16 mt-4">Go Live. Everywhere.</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Share Method 1 -->
+                <div
+                    class="p-8 rounded-3xl border border-white/5 bg-gradient-to-b from-white/[0.03] to-transparent hover:border-emerald-500/30 transition-colors group">
+                    <div
+                        class="w-16 h-16 mx-auto bg-emerald-900/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-qrcode text-emerald-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Smart QR Code</h3>
+                    <p class="text-gray-400 text-sm">Instant scan-to-save. Flash your code and end up directly in their
+                        contacts.</p>
+                </div>
+
+                <!-- Share Method 2 -->
+                <div
+                    class="p-8 rounded-3xl border border-white/5 bg-gradient-to-b from-white/[0.03] to-transparent hover:border-blue-500/30 transition-colors group">
+                    <div
+                        class="w-16 h-16 mx-auto bg-blue-900/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-link text-blue-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Unique URL</h3>
+                    <p class="text-gray-400 text-sm">Claim your personalized link (e.g., digitalcard.com/yourname) for
+                        your social bios.</p>
+                </div>
+
+                <!-- Share Method 3 -->
+                <div
+                    class="p-8 rounded-3xl border border-white/5 bg-gradient-to-b from-white/[0.03] to-transparent hover:border-purple-500/30 transition-colors group">
+                    <div
+                        class="w-16 h-16 mx-auto bg-purple-900/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-share-nodes text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">One-Click Share</h3>
+                    <p class="text-gray-400 text-sm">Send via WhatsApp, Email, or SMS with a single tap from your
+                        dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-outfit font-bold text-white text-center mb-16">Trusted by Future Leaders</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Review 1 -->
+                <div class="glass-morphism p-8 rounded-2xl border-white/5">
+                    <div class="flex items-center gap-1 text-yellow-500 mb-4 text-xs">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6">"I switched to DigitalCard last month. The 3D
+                        effect is a conversation starter every single time. It's paid for itself ten times over."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                            <!-- Placeholder avatar -->
+                            <i class="fas fa-user text-gray-500 w-full h-full flex items-center justify-center"></i>
+                        </div>
+                        <div>
+                            <div class="text-white font-bold text-sm">Sarah Jenkins</div>
+                            <div class="text-gray-500 text-xs">Real Estate Agent</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review 2 -->
+                <div class="glass-morphism p-8 rounded-2xl border-white/5">
+                    <div class="flex items-center gap-1 text-yellow-500 mb-4 text-xs">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6">"The ability to update my details instantly
+                        without re-printing cards is a game changer. The analytics are just the cherry on top."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                            <i class="fas fa-user text-gray-500 w-full h-full flex items-center justify-center"></i>
+                        </div>
+                        <div>
+                            <div class="text-white font-bold text-sm">Michael Chen</div>
+                            <div class="text-gray-500 text-xs">Startup Founder</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review 3 -->
+                <div class="glass-morphism p-8 rounded-2xl border-white/5">
+                    <div class="flex items-center gap-1 text-yellow-500 mb-4 text-xs">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6">"Clean, professional, and incredibly easy to
+                        set up. I had my card ready in 5 minutes before my flight."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                            <i class="fas fa-user text-gray-500 w-full h-full flex items-center justify-center"></i>
+                        </div>
+                        <div>
+                            <div class="text-white font-bold text-sm">Elena Rodriguez</div>
+                            <div class="text-gray-500 text-xs">Freelance Designer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-20 text-center">
+                <button onclick="handleCreateClick()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-12 py-5 rounded-2xl font-black text-lg shadow-xl shadow-indigo-600/20 transition-all hover:scale-105 inline-block">
+                    Create Your Digital Card
+                </button>
+                <p class="mt-4 text-gray-500 text-sm">No credit card required for basic plan</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-20 border-t border-white/5 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                        <i class="fas fa-id-card text-white text-xs"></i>
+                    </div>
+                    <span class="text-xl font-outfit font-bold text-white">DigitalCard</span>
+                </div>
+                <div class="flex gap-8 text-gray-400 text-sm">
+                    <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                    <a href="pricing.html" class="hover:text-white transition-colors">Pricing</a>
+                </div>
+                <div class="flex gap-4">
+                    <a href="#"
+                        class="w-10 h-10 rounded-full glass-morphism flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <i class="fab fa-twitter text-sm"></i>
+                    </a>
+                    <a href="#"
+                        class="w-10 h-10 rounded-full glass-morphism flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <i class="fab fa-linkedin-in text-sm"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-12 text-center text-gray-500 text-xs tracking-widest uppercase">
+                © 2025 DigitalCard Premium. The Future of You.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/namespace.js"></script>
+    <script src="js/core/database.js"></script>
+    <script src="js/core/auth.js"></script>
+
+    <script src="js/main.js"></script>
+    <script>
+        async function handleCreateClick() {
+            const user = await DigitalCard.Core.Auth.getUser();
+            if (!user) {
+                alert('Please login first to create your digital card.');
+                window.location.href = 'login.html';
+                return;
+            }
+            window.location.href = 'create.html';
+        }
+    </script>
+</body>
+
+</html>
+```
